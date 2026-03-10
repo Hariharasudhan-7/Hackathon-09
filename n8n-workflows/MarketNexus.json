@@ -1,0 +1,749 @@
+{
+  "name": "Market Nexus",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/scout",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "929420e2-d2cb-4b86-8410-193a66dcc1ce",
+      "name": "Receive Competitor Data",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        1952
+      ],
+      "webhookId": "e45ada1b-d6be-41d9-815f-b583064c28a5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-2",
+              "leftValue": "={{ $json.body.competitorUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8f50a40e-b8e7-46d1-b1b5-1a03a54cc88b",
+      "name": "Check If URL Provided",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        1952
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Receive Competitor Data').item.json.body.competitorUrl }}",
+        "options": {}
+      },
+      "id": "dcdf9770-05c7-427c-b0f3-9848e037c93e",
+      "name": "Scrape Competitor Website",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        928,
+        1872
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.justdial.com/{{ $('Receive Competitor Data').item.json.body.competitorName }}{{ $json.body.competitorLocationCity }}/json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "queryParameterArrays": "brackets",
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "001ae988-a2b6-4430-abe6-9eae16d56831",
+      "name": "Scrape Justdial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        928,
+        2080
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($input.all()) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a competitive intelligence analyst. Analyze all the competitor data provided from multiple sources (website scraping, Google Maps reviews, Justdial listings, Instagram posts) and extract key insights. Focus on: ratings and reviews, pricing information, customer complaints and praises, recent offers and promotions, new products or services, and overall market sentiment. Be thorough and objective in your analysis."
+        }
+      },
+      "id": "8127cb3b-cdd9-48f0-9678-83a0ec85b138",
+      "name": "AI Analysis Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1552,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"competitor_name\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"data_sources_used\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"rating\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"total_reviews\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"price_level\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"top_complaints\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"top_praises\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"recent_offers\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"new_products\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"overall_sentiment\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"scraped_at\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t},\n\t\"required\": [\"competitor_name\", \"data_sources_used\", \"overall_sentiment\", \"scraped_at\"]\n}"
+      },
+      "id": "f1423367-0cb0-448e-9569-194c26d79206",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1696,
+        2624
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "n9Ql9QRmcEz217Cq",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/n9Ql9QRmcEz217Cq",
+          "cachedResultName": "Competitive Business Analysis Data Processor"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1712,
+        1712
+      ],
+      "id": "3e5ab098-2b5b-4cd3-a461-3127f5510530",
+      "name": "Call 'Competitive Business Analysis Data Processor'"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        2624
+      ],
+      "id": "466e9a76-e3df-4666-9d48-ddd3c1a373b7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tzwORcSzp7l1Rein",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        2160
+      ],
+      "id": "d03ddb23-af1f-4915-8b59-708c8d769e60",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "fSRV1XvWLuzKYbwi",
+          "name": "March10"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.data }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "review",
+              "description": "take all the reviews",
+              "required": true
+            },
+            {
+              "name": "Price_range",
+              "type": "number",
+              "description": "get the price details",
+              "required": true
+            },
+            {
+              "name": "Complaints",
+              "description": "get any complaints ",
+              "required": true
+            },
+            {
+              "name": "PRICE_TYPE",
+              "description": "Say if the range is premium or normal",
+              "required": true
+            },
+            {
+              "name": "Offers",
+              "description": "GET THE RECENTS OFFERS",
+              "required": true
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm.\nOnly extract relevant information from the text.\nIf you do not know the value of an attribute asked to extract, you may omit the attribute's value. Also in the review attribute get atleast 4 reviews , in the price range get the average amount , in the complaints try to get some negative reviews , in the price_type say if it is premium or normal"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        1264,
+        1968
+      ],
+      "id": "046b21ec-5d5e-4402-96ef-6c6e2f2ecb90",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "myBusiness",
+              "value": "= \"name\":{{ $('Receive Competitor Data').item.json.body.yourProduct }} ,  \"locality\":{{$('Receive Competitor Data').item.json.body.yourLocation }} , \"city\":{{ $('Receive Competitor Data').item.json.body.yourLocation }} ",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "=competitorData",
+              "value": "={{ $('Receive Competitor Data').item.json.body.competitorName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "53291433-0f1b-49ca-8eb1-bd0462194363",
+      "name": "Prepare Business Profile",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2080,
+        1968
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this business situation:\n\nMY BUSINESS:\nName:     {{ $('Receive Competitor Data').item.json.body.yourProduct }}\nType:     {{ $('Receive Competitor Data').item.json.body.Type }}\nLocation: {{ $('Receive Competitor Data').item.json.body.yourLocation }} ,{{ $('Receive Competitor Data').item.json.body.yourCity }} ,India\n\nCOMPETITOR DATA:\nName:          {{ $('Receive Competitor Data').item.json.body.competitorName }}\nTheir Rating and Their Reviews: {{ $('Information Extractor').item.json.output.review }}\noffers:   {{ $json.competitorData.Offers }}\n\nWhat customers COMPLAIN about them:\n{{ $('Information Extractor').item.json.output.Complaints }}\n\nWhat customers PRAISE about them:\n{{ $('Information Extractor').item.json.output.review }}\n\nTheir Recent Offers:\n{{ $('Information Extractor').item.json.output.PRICE_TYPE }}\n\n\nOverall Sentiment: {{ $json.competitorData.overall_sentiment }}\n\nBased on this — find gaps and opportunities and return ONLY this JSON:\n\n{\n  analysis: {\n    price_gap: \"\",\n    service_gap: \"\",\n    product_gap: \"\",\n    rating_gap: \"\",\n    marketing_gap: \"\"\n  },\n  competitor_weaknesses: [],\n  our_opportunities: [],\n  urgent_alerts: [],\n  market_mood: \"\",\n  risk_level: \"HIGH/MEDIUM/LOW\",\n  confidence_score: \"0-100\",\n  summary: \"\"\n}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert business analyst specializing in Tamil Nadu local markets. You understand Coimbatore's business culture, local pricing, and consumer behavior deeply.\n\nYour job is to compare a small business owner's position against their competitor and find actionable gaps and opportunities.\n\nAlways think from the perspective of a local Tamil Nadu shop owner — practical, affordable, immediately actionable."
+        }
+      },
+      "id": "6fabfb9a-c6cb-4395-bf86-0706d580813a",
+      "name": "Core AI Analyst",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2352,
+        1968
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "36538aed-82bf-4482-9189-ca4ac55db0d2",
+      "name": "GPT-4 Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2320,
+        2240
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "hyts6dKWjb0ggRKo",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"analysis\": {\n\t\t\t\"type\": \"object\",\n\t\t\t\"properties\": {\n\t\t\t\t\"price_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"service_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"product_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"rating_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"marketing_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"competitor_weaknesses\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"our_opportunities\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"urgent_alerts\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"market_mood\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"risk_level\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"confidence_score\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"summary\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}"
+      },
+      "id": "e1b70a5c-4b40-47cf-a310-8e7d549ac87d",
+      "name": "Analysis JSON Schema",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2496,
+        2240
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Review this business analysis for a Tamil Nadu local shop owner.\n\nCheck:\n1. Are the gaps realistic?\n2. Are opportunities actually achievable for a small local shop?\n3. Is anything irrelevant to Tamil Nadu local market?\n\nIf all good → return same JSON as-is\nIf issues → fix them and return corrected JSON"
+        }
+      },
+      "id": "36ad5ca2-5cfa-429b-9497-7ff365098cb4",
+      "name": "AI Validation Node",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2736,
+        1968
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "0c78e4b2-a900-4c44-b2fb-3671ea6c6b10",
+      "name": "Validation Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2736,
+        2224
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "hyts6dKWjb0ggRKo",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"analysis\": {\n\t\t\t\"type\": \"object\",\n\t\t\t\"properties\": {\n\t\t\t\t\"price_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"service_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"product_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"rating_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"marketing_gap\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"competitor_weaknesses\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"our_opportunities\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"urgent_alerts\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n\t\t\"market_mood\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"risk_level\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"confidence_score\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"summary\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}"
+      },
+      "id": "b435942f-eee7-41c2-91f1-29bcdf70638f",
+      "name": "Validation JSON Schema",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2880,
+        2224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const analysis = JSON.parse(\n  $input.first().json.message.content\n);\n\nconst gaps = Object.values(\n  analysis.analysis\n).filter(v => v !== '').length;\n\nconst alerts = \n  analysis.urgent_alerts.length;\n\nconst urgencyScore = \n  (gaps * 10) + (alerts * 20);\n\nreturn [{\n  json: {\n    ...analysis,\n    urgency_score: urgencyScore,\n    recommended_priority: \n      urgencyScore > 60 ? 'HIGH' :\n      urgencyScore > 30 ? 'MEDIUM' : 'LOW'\n  }\n}];"
+      },
+      "id": "9a6a1792-37d7-4213-9ef9-fdd3e02b5bef",
+      "name": "Score Calculator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3072,
+        2224
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a senior marketing strategist who specializes in helping small local businesses in Tamil Nadu beat their competitors and send them the mails about there future improvements and strategies to follow to beat the competitors with the data you have"
+        }
+      },
+      "id": "067e5e9d-3c5c-43c4-8cbf-122357dc44e1",
+      "name": "Core AI Strategist",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        3312,
+        1968
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.gmail }}",
+        "subject": "=Marketing Strategy - {{ $json.body.businessName }}",
+        "message": "={{ $('Core AI Strategist').item.json.output }}",
+        "options": {}
+      },
+      "id": "58736d65-189e-4cf4-8ad3-42e44228bdb3",
+      "name": "Send Strategy Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3680,
+        1664
+      ],
+      "webhookId": "1ea0ba8d-a908-4583-a567-9eb32f2c01b1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TVuVhmReZ6SlRU44",
+          "name": "Gmail account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "d5bf26de-a0a1-45cc-9453-ac60b6fc289f",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3680,
+        1968
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "54fc669e-39cb-402e-951c-48a0a3fa1611",
+      "name": "GPT-4 Model1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        3312,
+        2224
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "hyts6dKWjb0ggRKo",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Receive Competitor Data').item.json.body.yourEmail }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        3472,
+        2208
+      ],
+      "id": "dc1a4aba-6921-4781-a16b-9085a99eae28",
+      "name": "Send a message in Gmail",
+      "webhookId": "96df0c28-3d5c-4c92-adb7-868173d43f76",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TVuVhmReZ6SlRU44",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive Competitor Data": {
+      "main": [
+        [
+          {
+            "node": "Check If URL Provided",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If URL Provided": {
+      "main": [
+        [
+          {
+            "node": "Scrape Competitor Website",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scrape Justdial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Competitor Website": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape Justdial": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Analysis Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Analysis Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Prepare Business Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Business Profile": {
+      "main": [
+        [
+          {
+            "node": "Core AI Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Core AI Analyst": {
+      "main": [
+        [
+          {
+            "node": "AI Validation Node",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4 Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Core AI Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analysis JSON Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Core AI Analyst",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Validation Node": {
+      "main": [
+        [
+          {
+            "node": "Core AI Strategist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Validation Node",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation JSON Schema": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Validation Node",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Core AI Strategist": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Strategy Email": {
+      "main": [
+        []
+      ]
+    },
+    "GPT-4 Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Core AI Strategist",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Calculator": {
+      "main": [
+        []
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "Core AI Strategist",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "577a0350-7144-41cd-ad30-eb1ce7e31975",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0585867e330ebfe569f0005872cab8fc87d93fe40fb4f04add1c239a2144c5eb"
+  },
+  "id": "M5lPj8CjXKWmlLbb",
+  "tags": []
+}
